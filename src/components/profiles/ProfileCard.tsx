@@ -76,7 +76,7 @@ export function ProfileCard({ profile }: ProfileCardProps) {
               {typeLabel}
             </span>
             {hasCscs && (
-              <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-50 text-amber-700 border border-amber-100 shadow-sm animate-fade-in">
+              <span className="badge badge-cscs mt-1 animate-fade-in text-[10px]">
                 🛡️ CSCS Card
               </span>
             )}

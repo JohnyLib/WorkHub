@@ -59,9 +59,10 @@ body {
 
 /* ─── Focus ─────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid #2563EB;
+  outline: 2px solid #3B82F6;
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
+  transition: outline-color 0.2s ease, outline-offset 0.2s ease;
 }
 
 /* ─── Animations ────────────────────────────────────────────────────────── */
@@ -161,12 +162,14 @@ body {
     border: 1px solid #E8EEF6;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 300ms cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   .card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: #D1DCF0;
+    box-shadow: var(--shadow-lg), 0 10px 30px rgba(15, 23, 42, 0.04);
+    transform: translateY(-4px);
+    border-color: #CBD5E1;
   }
   .card-flat {
     background: #FFFFFF;
@@ -192,7 +195,7 @@ body {
     border-radius: var(--radius-md);
     border: none;
     cursor: pointer;
-    transition: all 200ms ease;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-glow-blue);
     min-height: 44px;
     text-decoration: none;
@@ -200,9 +203,11 @@ body {
   .btn-primary:hover {
     background: #1D4ED8;
     box-shadow: 0 12px 40px rgba(37,99,235,0.45);
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.02);
   }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:active {
+    transform: translateY(0) scale(0.97);
+  }
 
   .btn-ghost {
     display: inline-flex;
@@ -217,7 +222,7 @@ body {
     border-radius: var(--radius-md);
     border: 1px solid #E2E8F0;
     cursor: pointer;
-    transition: all 200ms ease;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 44px;
     text-decoration: none;
   }
@@ -225,6 +230,10 @@ body {
     background: #F8FAFC;
     border-color: #CBD5E1;
     color: #0F172A;
+    transform: translateY(-1.5px) scale(1.01);
+  }
+  .btn-ghost:active {
+    transform: translateY(0) scale(0.98);
   }
 
   .btn-danger {
@@ -240,13 +249,17 @@ body {
     border-radius: var(--radius-md);
     border: 1px solid #FECACA;
     cursor: pointer;
-    transition: all 200ms ease;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 44px;
   }
   .btn-danger:hover {
     background: #DC2626;
     color: white;
     border-color: #DC2626;
+    transform: translateY(-2px) scale(1.02);
+  }
+  .btn-danger:active {
+    transform: translateY(0) scale(0.97);
   }
 
   /* Input */
@@ -258,24 +271,25 @@ body {
     border-radius: var(--radius-md);
     font-size: 14px;
     color: #0F172A;
-    transition: all 200ms ease;
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
     min-height: 48px;
     outline: none;
   }
   .input-base::placeholder { color: #94A3B8; }
   .input-base:hover  { border-color: #CBD5E1; }
-  .input-base:focus  { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .input-base:focus  { border-color: #2563EB; box-shadow: 0 0 0 4px rgba(37,99,235,0.12); }
 
   /* Badge */
   .badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
+    padding: 3.5px 10px;
     border-radius: var(--radius-full);
     font-size: 11px;
     font-weight: 600;
     line-height: 1.4;
+    transition: all 200ms ease;
   }
   .badge-blue   { background: #EFF6FF; color: #1D4ED8; }
   .badge-green  { background: #F0FDF4; color: #16A34A; }
@@ -283,6 +297,8 @@ body {
   .badge-red    { background: #FEF2F2; color: #DC2626; }
   .badge-violet { background: #F5F3FF; color: #7C3AED; }
   .badge-slate  { background: #F1F5F9; color: #475569; }
+  .badge-cscs   { background: linear-gradient(135deg, #FFFDF5 0%, #FEF3C7 100%); color: #92400E; border: 1px solid #FDE68A; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.12); font-weight: 700; }
+  .badge-cscs:hover { box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2); transform: translateY(-0.5px); }
 
   /* Gradient text */
   .gradient-text {

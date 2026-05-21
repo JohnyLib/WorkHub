@@ -209,7 +209,7 @@ export default function HomePage() {
             />
             <button
               type="submit"
-              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-blue-900/40 hover:-translate-y-0.5 min-h-[52px]"
+              className="flex items-center justify-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 active:scale-[0.97] text-white font-bold text-sm rounded-xl transition-all duration-300 shadow-lg shadow-blue-900/40 hover:-translate-y-1 hover:scale-[1.02] min-h-[52px] cursor-pointer"
             >
               <Search className="w-4 h-4" /> Search Jobs
             </button>
@@ -427,11 +427,11 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link href="/my/post-job"
-                className="flex items-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold text-base rounded-xl hover:bg-blue-50 transition-all shadow-xl hover:-translate-y-0.5 min-h-[56px]">
+                className="flex items-center gap-2 px-8 py-4 bg-white text-blue-600 font-bold text-base rounded-xl hover:bg-blue-50 active:scale-[0.97] transition-all duration-300 shadow-xl hover:-translate-y-1 hover:scale-[1.02] min-h-[56px] cursor-pointer">
                 <PlusCircle className="w-5 h-5" /> Post a Job — Free
               </Link>
               <Link href="/masters"
-                className="flex items-center gap-2 px-8 py-4 font-bold text-base rounded-xl transition-all min-h-[56px] border border-white/30 text-white hover:bg-white/10">
+                className="flex items-center gap-2 px-8 py-4 font-bold text-base rounded-xl transition-all duration-300 active:scale-[0.97] min-h-[56px] border border-white/30 text-white hover:bg-white/10 hover:-translate-y-1 hover:scale-[1.02] cursor-pointer">
                 <Users className="w-5 h-5" /> Browse Workers
               </Link>
             </div>

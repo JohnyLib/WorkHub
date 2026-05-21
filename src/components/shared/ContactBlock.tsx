@@ -24,7 +24,9 @@ const MESSENGER_STYLES: Record<MessengerType, { bg: string; icon: string }> = {
 function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false)
 
-  async function copy() {
+  async function copy(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
     try {
       await navigator.clipboard.writeText(value)
       setCopied(true)
@@ -36,7 +38,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
     <button
       onClick={copy}
       aria-label={`Copy ${label}`}
-      className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
+      className="ml-auto p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all cursor-pointer relative z-10"
     >
       {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
@@ -81,29 +83,33 @@ export function ContactBlock({
       <p className="font-semibold text-slate-800">{contactName}</p>
 
       {contactPhone && (
-        <a
-          href={`tel:${contactPhone}`}
-          className="flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-xl text-sm font-medium text-slate-700 hover:text-blue-700 transition-all min-h-[48px] group border border-transparent hover:border-blue-100"
-        >
-          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-            <Phone className="w-4 h-4 text-blue-600" />
-          </div>
-          <span className="flex-1">{contactPhone}</span>
+        <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-xl text-sm font-medium text-slate-700 hover:text-blue-700 transition-all min-h-[48px] border border-transparent hover:border-blue-100 group">
+          <a
+            href={`tel:${contactPhone}`}
+            className="flex items-center gap-3 flex-1 min-w-0"
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Phone className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="flex-1 truncate">{contactPhone}</span>
+          </a>
           <CopyButton value={contactPhone} label="phone" />
-        </a>
+        </div>
       )}
 
       {contactEmail && (
-        <a
-          href={`mailto:${contactEmail}`}
-          className="flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-xl text-sm font-medium text-slate-700 hover:text-blue-700 transition-all min-h-[48px] group border border-transparent hover:border-blue-100"
-        >
-          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-            <Mail className="w-4 h-4 text-blue-600" />
-          </div>
-          <span className="flex-1 truncate">{contactEmail}</span>
+        <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-xl text-sm font-medium text-slate-700 hover:text-blue-700 transition-all min-h-[48px] border border-transparent hover:border-blue-100 group">
+          <a
+            href={`mailto:${contactEmail}`}
+            className="flex items-center gap-3 flex-1 min-w-0"
+          >
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Mail className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="flex-1 truncate">{contactEmail}</span>
+          </a>
           <CopyButton value={contactEmail} label="email" />
-        </a>
+        </div>
       )}
 
       {messengers.length > 0 && (

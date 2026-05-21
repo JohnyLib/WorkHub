@@ -64,7 +64,7 @@ export default async function MasterProfilePage({ params }: Props) {
                       <CheckCircle className="w-5 h-5 text-blue-500" aria-label="Verified" />
                     )}
                     {hasCscs && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-sm">
+                      <span className="badge badge-cscs text-xs">
                         🛡️ CSCS Card Verified
                       </span>
                     )}
