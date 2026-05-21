@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, HardHat, Globe, ChevronDown, Bell, User, LogOut, Briefcase, Settings, ChevronRight } from 'lucide-react'
+import { Menu, X, HardHat, Globe, ChevronDown, Bell, User, LogOut, Briefcase, Settings, ChevronRight, HelpCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signOutAction } from '@/lib/supabase/actions'
+import { toast } from 'sonner'
 
 const NAV_LINKS = [
   { href: '/jobs', label: 'Find Work' },
@@ -22,6 +23,8 @@ export default function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
+  const lastUserRef = useRef<any>(undefined)
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -29,12 +32,24 @@ export default function Header() {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
+      lastUserRef.current = user
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
       setLoading(false)
+
+      if (lastUserRef.current !== undefined) {
+        if (event === 'SIGNED_IN' && currentUser) {
+          const name = currentUser.user_metadata?.full_name || currentUser.email || 'User'
+          toast.success(`Welcome back, ${name}!`)
+        } else if (event === 'SIGNED_OUT') {
+          toast.info('Signed out successfully.')
+        }
+      }
+      lastUserRef.current = currentUser
     })
 
     return () => {
@@ -117,6 +132,17 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
             <button
+              onClick={() => window.dispatchEvent(new CustomEvent('start-onboarding-tour'))}
+              aria-label="Start product tour"
+              className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                scrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-white/70 hover:bg-white/10'
+              }`}
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              Tour
+            </button>
+
+            <button
               aria-label="Switch language"
               className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all ${
                 scrolled ? 'text-slate-500 hover:bg-slate-100' : 'text-white/70 hover:bg-white/10'
@@ -177,6 +203,16 @@ export default function Header() {
                             <Settings className="w-4 h-4 shrink-0" />
                             Post a Job
                           </Link>
+                          <button
+                            onClick={() => {
+                              setUserMenuOpen(false)
+                              window.dispatchEvent(new CustomEvent('start-onboarding-tour'))
+                            }}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors w-full text-left cursor-pointer"
+                          >
+                            <HelpCircle className="w-4 h-4 shrink-0 text-slate-400" />
+                            Product Tour
+                          </button>
                         </div>
                         <div className="border-t border-slate-50 py-1">
                           <button
@@ -256,6 +292,15 @@ export default function Header() {
                   <Briefcase className="w-4 h-4 text-slate-400" /> Dashboard
                 </Link>
                 <button
+                  onClick={() => {
+                    setMobileOpen(false)
+                    window.dispatchEvent(new CustomEvent('start-onboarding-tour'))
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-all w-full text-left cursor-pointer"
+                >
+                  <HelpCircle className="w-4 h-4 text-slate-400" /> Product Tour
+                </button>
+                <button
                   onClick={async () => { await signOutAction(); window.location.href = '/' }}
                   className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-all w-full text-left"
                 >
@@ -272,6 +317,15 @@ export default function Header() {
                   className="flex items-center justify-center px-4 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all min-h-[48px] shadow-lg shadow-blue-600/20">
                   Register Free
                 </Link>
+                <button
+                  onClick={() => {
+                    setMobileOpen(false)
+                    window.dispatchEvent(new CustomEvent('start-onboarding-tour'))
+                  }}
+                  className="flex items-center justify-center px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition-all min-h-[48px] w-full mt-2 cursor-pointer"
+                >
+                  ✨ Product Tour
+                </button>
               </>
             )}
           </div>

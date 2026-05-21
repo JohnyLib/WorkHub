@@ -394,6 +394,15 @@ body {
   font-family: 'DM Sans', system-ui, sans-serif !important;
 }
 
+/* ─── Onboarding Tour Spotlight Highlight ─────────────────────────────── */
+.spotlight-active {
+  position: relative;
+  z-index: 10001 !important;
+  pointer-events: auto !important;
+  box-shadow: 0 0 0 4px #3b82f6, 0 8px 30px rgba(59, 130, 246, 0.5) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 /* ─── Reduced motion ────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

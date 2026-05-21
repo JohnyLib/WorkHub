@@ -101,19 +101,56 @@ function LoginForm({ supabase, router, returnUrl }: FormProps) {
 }
 
 function RegisterForm({ supabase, router, returnUrl }: FormProps) {
+  const [isRegisteredNeedVerify, setIsRegisteredNeedVerify] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema), mode: 'onBlur', defaultValues: { role: 'worker' },
   })
 
   const onSubmit = async (data: RegisterData) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: resData, error } = await supabase.auth.signUp({
         email: data.email, password: data.password,
         options: { data: { full_name: data.full_name, role: data.role, country: 'uk' } }
       })
-      if (error) { toast.error(error.message) }
-      else { toast.success('Account created! Welcome to WorkBridge.'); router.push('/my/profile'); router.refresh() }
+      if (error) { 
+        toast.error(error.message) 
+      } else if (resData.user && !resData.session) {
+        setIsRegisteredNeedVerify(true)
+        setRegisteredEmail(data.email)
+        toast.success('Registration successful! Please verify your email.')
+      } else { 
+        toast.success('Account created! Welcome to WorkBridge.')
+        router.push('/my/profile')
+        router.refresh() 
+      }
     } catch { toast.error('An unexpected error occurred.') }
+  }
+
+  if (isRegisteredNeedVerify) {
+    return (
+      <div className="text-center py-6 animate-fade-in-up space-y-4">
+        <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+          <Mail className="w-8 h-8 text-blue-600 animate-pulse" />
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-900 text-lg">Verify your email address</h3>
+          <p className="text-sm text-slate-500 mt-2 px-2 leading-relaxed">
+            We&apos;ve sent a verification link to <strong className="text-slate-800">{registeredEmail}</strong>. 
+            Click the link in the email to activate your account and log in.
+          </p>
+        </div>
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs text-slate-500 leading-normal max-w-xs mx-auto">
+          ⚠️ <strong>Don&apos;t see the email?</strong> Check your spam folder or wait 1-2 minutes for it to arrive.
+        </div>
+        <button
+          onClick={() => setIsRegisteredNeedVerify(false)}
+          className="text-xs text-blue-600 hover:text-blue-700 transition-colors font-semibold"
+        >
+          ← Back to Register
+        </button>
+      </div>
+    )
   }
 
   return (

@@ -9,7 +9,7 @@ import { JobCard, JobCardSkeleton } from '@/components/jobs/JobCard'
 import { JobFilters } from '@/components/jobs/JobFilters'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { MOCK_JOBS } from '@/lib/mock/data'
-import { SearchX, TrendingDown, TrendingUp, Clock, Eye } from 'lucide-react'
+import { SearchX, TrendingDown, TrendingUp, Clock, Eye, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 import { getJobListingsAction, getSavedListingsAction, toggleSaveListingAction } from '@/lib/supabase/actions'
 import Link from 'next/link'
@@ -156,7 +156,7 @@ export default function JobsPage() {
           {/* Results */}
           <div className="flex-1 min-w-0">
             {/* Top bar: mobile filter + sort */}
-            <div className="flex items-center gap-3 mb-5 flex-wrap">
+            <div className="flex items-center justify-between gap-3 mb-5 flex-wrap w-full">
               <div className="lg:hidden">
                 <JobFilters
                   filters={filters}
@@ -165,21 +165,21 @@ export default function JobsPage() {
                   resultCount={filtered.length}
                 />
               </div>
-              <div className="flex items-center gap-1.5 ml-auto">
-                {SORT_OPTIONS.map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    onClick={() => setSort(value)}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border transition-all min-h-[38px] ${
-                      sort === value
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{label}</span>
-                  </button>
-                ))}
+              <div className="relative ml-auto flex items-center min-w-[140px] sm:min-w-0">
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                  className="w-full pl-3.5 pr-9 py-2 text-xs font-semibold bg-white text-slate-600 border border-slate-200 rounded-xl hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[38px] transition-all appearance-none cursor-pointer"
+                >
+                  {SORT_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      Sort: {label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </div>
               </div>
             </div>
 

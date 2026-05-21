@@ -63,13 +63,13 @@ export function JobCard({ job, saved = false, onSave }: JobCardProps) {
   const jobIsNew = isNew(job.created_at)
 
   return (
-    <article className={`card p-5 flex flex-col gap-3.5 group border-l-4 ${accentClass} card-interactive`}>
+    <article className={`card p-4 sm:p-5 flex flex-col gap-3 sm:gap-3.5 group border-l-4 ${accentClass} card-interactive`}>
 
       {/* ── Header ── */}
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 sm:gap-3">
         {/* Trade icon with profession color */}
         <div
-          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-lg font-bold ${profClass}`}
+          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 text-base sm:text-lg font-bold ${profClass}`}
         >
           {job.profession.charAt(0)}
         </div>
@@ -111,51 +111,51 @@ export function JobCard({ job, saved = false, onSave }: JobCardProps) {
       </div>
 
       {/* ── Pay Rate ── */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {job.pay_rate ? (
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black text-slate-900">
+            <span className="text-xl sm:text-2xl font-black text-slate-900">
               £{job.pay_rate.toLocaleString()}
             </span>
-            <span className="text-sm font-medium text-slate-400">{payLabel}</span>
+            <span className="text-xs sm:text-sm font-medium text-slate-400">{payLabel}</span>
           </div>
         ) : (
-          <span className="text-base font-semibold text-slate-500">Negotiable</span>
+          <span className="text-sm sm:text-base font-semibold text-slate-500">Negotiable</span>
         )}
         {job.pay_type && job.pay_type !== 'negotiable' && (
-          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${PAY_TYPE_BG[job.pay_type]}`}>
+          <span className={`text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full border ${PAY_TYPE_BG[job.pay_type]}`}>
             {job.pay_type === 'day' ? 'Per Day' : job.pay_type === 'hour' ? 'Per Hour' : 'Per m²'}
           </span>
         )}
       </div>
 
       {/* ── Meta ── */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-500">
+      <div className="flex flex-wrap gap-x-3.5 gap-y-2 text-[11px] sm:text-xs text-slate-500">
         <span className="flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-medium">{job.location_area}</span>
-          {job.location_postcode && <span className="text-slate-400">{job.location_postcode}</span>}
+          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+          <span className="font-medium truncate max-w-[120px] sm:max-w-none">{job.location_area}</span>
+          {job.location_postcode && <span className="text-slate-400 shrink-0">{job.location_postcode}</span>}
         </span>
-        <span className="flex items-center gap-1.5">
-          <Users className="w-3.5 h-3.5 text-slate-400" />
+        <span className="flex items-center gap-1.5 shrink-0">
+          <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           {job.workers_count} needed
         </span>
         {job.days_per_week && (
-          <span className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <span className="flex items-center gap-1.5 shrink-0">
+            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             {job.days_per_week}d/wk
             {job.hours_paid && ` · ${job.hours_paid}h/day`}
           </span>
         )}
         {job.tools_provided && (
-          <span className="flex items-center gap-1.5 text-emerald-600 font-medium">
-            <Wrench className="w-3.5 h-3.5" />
+          <span className="flex items-center gap-1.5 text-emerald-600 font-medium shrink-0">
+            <Wrench className="w-3.5 h-3.5 shrink-0" />
             Tools provided
           </span>
         )}
         {job.start_date && (
-          <span className="flex items-center gap-1.5 text-blue-600 font-medium">
-            <Zap className="w-3.5 h-3.5" />
+          <span className="flex items-center gap-1.5 text-blue-600 font-medium shrink-0">
+            <Zap className="w-3.5 h-3.5 shrink-0" />
             Starts {new Date(job.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
           </span>
         )}
@@ -178,8 +178,8 @@ export function JobCard({ job, saved = false, onSave }: JobCardProps) {
       )}
 
       {/* ── Footer ── */}
-      <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-auto">
-        <div className="flex items-center gap-3 text-xs text-slate-400">
+      <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 mt-auto flex-wrap gap-2.5">
+        <div className="flex items-center gap-3 text-[11px] sm:text-xs text-slate-400 flex-wrap">
           <span className="flex items-center gap-1">
             <Eye className="w-3.5 h-3.5" /> {job.views_count}
           </span>

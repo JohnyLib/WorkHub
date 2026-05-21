@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { Toaster } from 'sonner'
+import OnboardingTour from '@/components/shared/OnboardingTour'
 import './globals.css'
 
 export const viewport: Viewport = {
@@ -51,6 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               style: { fontFamily: "'DM Sans', sans-serif" },
             }}
           />
+          <OnboardingTour />
         </NextIntlClientProvider>
       </body>
     </html>
