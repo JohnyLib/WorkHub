@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#0F172A"/>
+  <rect width="192" height="192" rx="40" fill="url(#grad)" opacity="0.6"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E3A5F"/>
+      <stop offset="100%" style="stop-color:#2563EB"/>
+    </linearGradient>
+  </defs>
+  <!-- Hard hat -->
+  <ellipse cx="96" cy="115" rx="44" ry="10" fill="#2563EB" opacity="0.3"/>
+  <rect x="52" y="108" width="88" height="12" rx="4" fill="#1D4ED8"/>
+  <path d="M60 108 Q62 72 96 65 Q130 72 132 108Z" fill="#2563EB"/>
+  <rect x="78" y="62" width="36" height="10" rx="3" fill="#60A5FA"/>
+  <rect x="52" y="106" width="88" height="7" rx="3.5" fill="#3B82F6"/>
+</svg>
