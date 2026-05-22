@@ -7,19 +7,16 @@ import type {
   WorkerProfile,
   Profile,
   SavedListing,
-  Notification,
   MessengerType,
   PayType,
-  WorkerType,
-  EmployerType,
-  PaymentMethod
+  WorkerType
 } from '@/types'
 
-function isDynamicServerError(err: any): boolean {
+function isDynamicServerError(err: unknown): boolean {
   return (
     err instanceof Error &&
     (err.message.includes('Dynamic server usage') ||
-      (err as any).digest === 'DYNAMIC_SERVER_USAGE' ||
+      (err as { digest?: string }).digest === 'DYNAMIC_SERVER_USAGE' ||
       (err.message.includes('Route') && err.message.includes('rendered statically')))
   )
 }
@@ -72,9 +69,9 @@ export async function updateProfileRoleAction(role: 'employer' | 'worker' | 'bot
     if (error) throw error
     revalidatePath('/my/profile')
     return { success: true }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in updateProfileRoleAction:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
 
@@ -136,6 +133,7 @@ export async function upsertWorkerProfileAction(data: {
     }
 
     let error
+    let id = existing?.id
     if (existing) {
       const { error: err } = await supabase
         .from('worker_profiles')
@@ -143,19 +141,24 @@ export async function upsertWorkerProfileAction(data: {
         .eq('id', existing.id)
       error = err
     } else {
-      const { error: err } = await supabase
+      const { data: inserted, error: err } = await supabase
         .from('worker_profiles')
         .insert(payload)
+        .select()
+        .single()
       error = err
+      if (inserted) {
+        id = inserted.id
+      }
     }
 
     if (error) throw error
     revalidatePath('/masters')
     revalidatePath('/my/profile')
-    return { success: true }
-  } catch (error: any) {
+    return { success: true, id }
+  } catch (error) {
     console.error('Error in upsertWorkerProfileAction:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
 
@@ -226,20 +229,21 @@ export async function createJobAction(data: {
     revalidatePath('/jobs')
     revalidatePath('/my/listings')
     return { success: true, id: inserted.id }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in createJobAction:', error)
-    return { success: false, error: error.message }
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
 
-function normalizeJobListing(job: any): JobListing {
-  if (!job) return job
+function normalizeJobListing(job: unknown): JobListing {
+  if (!job) return job as unknown as JobListing
+  const j = job as Record<string, unknown>
   return {
-    ...job,
-    required_docs: job.required_docs || [],
-    ppe_provided: job.ppe_provided || [],
-    messengers: job.messengers || [],
-  }
+    ...j,
+    required_docs: (j.required_docs as string[]) || [],
+    ppe_provided: (j.ppe_provided as string[]) || [],
+    messengers: (j.messengers as string[]) || [],
+  } as unknown as JobListing
 }
 
 export async function getJobListingsAction(filters?: {
@@ -274,7 +278,7 @@ export async function getJobListingsAction(filters?: {
 
     const { data, error } = await query
     if (error) throw error
-    return ((data || []) as any[]).map(normalizeJobListing)
+    return ((data || []) as unknown as Record<string, unknown>[]).map(normalizeJobListing)
   } catch (error) {
     if (isDynamicServerError(error)) throw error
     console.error('Error in getJobListingsAction:', error)
@@ -297,7 +301,7 @@ export async function getJobByIdAction(id: string): Promise<JobListing | null> {
     if (error) throw error
 
     // Increment views count asynchronously
-    const { error: rpcError } = await (supabase as any).rpc('increment_views', { row_id: id })
+    const { error: rpcError } = await (supabase as unknown as { rpc: (name: string, args: { row_id: string }) => Promise<{ error: Error | null }> }).rpc('increment_views', { row_id: id })
     if (rpcError) {
       // fallback if RPC doesn't exist or fails
       await supabase
@@ -330,7 +334,7 @@ export async function getMyJobsAction(): Promise<JobListing[]> {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    return ((data || []) as any[]).map(normalizeJobListing)
+    return ((data || []) as unknown as Record<string, unknown>[]).map(normalizeJobListing)
   } catch (error) {
     if (isDynamicServerError(error)) throw error
     console.error('Error in getMyJobsAction:', error)
@@ -359,7 +363,7 @@ export async function getSavedListingsAction(): Promise<SavedListing[]> {
       .order('saved_at', { ascending: false })
 
     if (error) throw error
-    return ((data || []) as any[]).map((saved) => ({
+    return ((data || []) as unknown as Record<string, unknown>[]).map((saved) => ({
       ...saved,
       listing: saved.listing ? normalizeJobListing(saved.listing) : undefined,
     })) as unknown as SavedListing[]
@@ -408,7 +412,7 @@ export async function toggleSaveListingAction(listingId: string): Promise<{ succ
       revalidatePath('/my/saved')
       return { success: true, saved: true }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in toggleSaveListingAction:', error)
     return { success: false, saved: false }
   }

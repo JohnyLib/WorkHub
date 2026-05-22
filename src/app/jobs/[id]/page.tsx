@@ -13,7 +13,7 @@ import { formatPayRate } from '@/lib/utils/formatCurrency'
 import { formatDate, formatShortDate } from '@/lib/utils/formatDate'
 import {
   MapPin, Users, Clock, Calendar, Wrench, FileText,
-  HardHat, ChevronLeft, Eye, Share2, Banknote, Check, Flag,
+  HardHat, ChevronLeft, Eye, Banknote, Check, Flag,
 } from 'lucide-react'
 import { getJobByIdAction, getCurrentUserAction, getJobListingsAction } from '@/lib/supabase/actions'
 import { ShareButton } from '@/components/jobs/ShareButton'

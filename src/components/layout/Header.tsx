@@ -7,6 +7,7 @@ import { Menu, X, HardHat, Globe, ChevronDown, Bell, User, LogOut, Briefcase, Se
 import { createClient } from '@/lib/supabase/client'
 import { signOutAction } from '@/lib/supabase/actions'
 import { toast } from 'sonner'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 const NAV_LINKS = [
   { href: '/jobs', label: 'Find Work' },
@@ -17,13 +18,13 @@ const NAV_LINKS = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  const lastUserRef = useRef<any>(undefined)
+  const lastUserRef = useRef<SupabaseUser | null | undefined>(undefined)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -69,8 +70,12 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Close mobile menu on route change
-  useEffect(() => { setMobileOpen(false) }, [pathname])
+  // Close mobile menu on route change using derived state
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
+    setMobileOpen(false)
+  }
 
   const isLoggedIn = !!user
   const initials = user?.user_metadata?.full_name

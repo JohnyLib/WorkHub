@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -10,14 +10,15 @@ import { UK_PROFESSIONS } from '@/lib/constants/professions'
 import { REQUIRED_DOCS, PPE_ITEMS } from '@/lib/constants/documents'
 import { toast } from 'sonner'
 import { Check, ChevronRight, ChevronLeft, MapPin, Users, Clock, Wrench, Phone, FileText, Eye } from 'lucide-react'
-import { createJobAction } from '@/lib/supabase/actions'
+import { createJobAction, getCurrentUserAction } from '@/lib/supabase/actions'
+import type { PayType, MessengerType } from '@/types'
 
 interface JobDraft {
   profession: string
   workers_count: string
   location_area: string
   location_postcode: string
-  pay_type: 'day' | 'hour' | 'sqm' | 'negotiable'
+  pay_type: PayType
   pay_rate: string
   days_per_week: string
   hours_paid: string
@@ -28,7 +29,7 @@ interface JobDraft {
   contact_name: string
   contact_phone: string
   contact_email: string
-  messengers: string[]
+  messengers: MessengerType[]
   extra_notes: string
 }
 
@@ -192,21 +193,54 @@ export default function PostJobPage() {
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState<JobDraft>(DEFAULT)
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) setDraft((d) => ({ ...DEFAULT, ...JSON.parse(saved) }))
-    } catch {}
-  }, [])
-
   const [errors, setErrors] = useState<Partial<Record<keyof JobDraft, string>>>({})
   const [submitting, setSubmitting] = useState(false)
+  const isLoadedRef = useRef(false)
+
+  // Load from localStorage & pre-fill from user profile on mount
+  useEffect(() => {
+    async function initialize() {
+      let savedDraft: Partial<JobDraft> = {}
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          savedDraft = JSON.parse(saved)
+        }
+      } catch (err) {
+        console.error('Error loading draft:', err)
+      }
+
+      try {
+        const user = await getCurrentUserAction()
+        setDraft(() => {
+          const merged = { ...DEFAULT, ...savedDraft }
+          if (!merged.contact_name && user?.full_name) {
+            merged.contact_name = user.full_name
+          }
+          if (!merged.contact_email && user?.email) {
+            merged.contact_email = user.email
+          }
+          return merged
+        })
+      } catch (err) {
+        console.error('Error loading user profile:', err)
+        if (Object.keys(savedDraft).length > 0) {
+          setDraft(() => ({ ...DEFAULT, ...savedDraft }))
+        }
+      } finally {
+        isLoadedRef.current = true
+      }
+    }
+
+    initialize()
+  }, [])
 
   // Auto-save to localStorage
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(draft)) } catch {}
+    if (!isLoadedRef.current) return
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
+    } catch {}
   }, [draft])
 
   const set = (key: keyof JobDraft, val: JobDraft[keyof JobDraft]) =>
@@ -242,7 +276,7 @@ export default function PostJobPage() {
         workers_count: Number(draft.workers_count) || 1,
         location_area: draft.location_area,
         location_postcode: draft.location_postcode || undefined,
-        pay_type: draft.pay_type as any,
+        pay_type: draft.pay_type,
         pay_rate: draft.pay_rate ? Number(draft.pay_rate) : undefined,
         days_per_week: draft.days_per_week ? Number(draft.days_per_week) : undefined,
         hours_paid: draft.hours_paid ? Number(draft.hours_paid) : undefined,
@@ -253,7 +287,7 @@ export default function PostJobPage() {
         contact_name: draft.contact_name,
         contact_phone: draft.contact_phone || undefined,
         contact_email: draft.contact_email || undefined,
-        messengers: draft.messengers as any[],
+        messengers: draft.messengers,
         extra_notes: draft.extra_notes || undefined,
       }
       const res = await createJobAction(payload)
@@ -264,8 +298,8 @@ export default function PostJobPage() {
       } else {
         toast.error(res.error || 'Failed to publish job listing.')
       }
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred while publishing.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'An error occurred while publishing.')
     } finally {
       setSubmitting(false)
     }

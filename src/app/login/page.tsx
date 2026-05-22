@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
-import { HardHat, Mail, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle, ShieldCheck, Zap } from 'lucide-react'
+import { HardHat, Mail, Lock, User, ArrowRight, Eye, EyeOff, CheckCircle, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import Header from '@/components/layout/Header'
 import { createClient } from '@/lib/supabase/client'
@@ -100,7 +100,7 @@ function LoginForm({ supabase, router, returnUrl }: FormProps) {
   )
 }
 
-function RegisterForm({ supabase, router, returnUrl }: FormProps) {
+function RegisterForm({ supabase, router }: FormProps) {
   const [isRegisteredNeedVerify, setIsRegisteredNeedVerify] = useState(false)
   const [registeredEmail, setRegisteredEmail] = useState('')
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterData>({
@@ -229,13 +229,15 @@ function LoginPageInner() {
   const searchParams = useSearchParams()
   const returnUrl = searchParams?.get('returnUrl') || '/my/profile'
 
-  // Read tab from URL
-  useEffect(() => {
-    const urlTab = searchParams?.get('tab') as Tab | null
-    if (urlTab && urlTab !== tab && ['login', 'register'].includes(urlTab)) {
+  // Synchronize tab with searchParams using derived state pattern
+  const urlTab = searchParams?.get('tab') as Tab | null
+  const [prevUrlTab, setPrevUrlTab] = useState<Tab | null>(null)
+  if (urlTab !== prevUrlTab) {
+    setPrevUrlTab(urlTab)
+    if (urlTab && ['login', 'register'].includes(urlTab)) {
       setTab(urlTab)
     }
-  }, [searchParams, tab])
+  }
 
   const handleGoogleSignIn = async () => {
     try {

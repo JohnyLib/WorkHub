@@ -8,7 +8,7 @@ import { JobStatusBadge } from '@/components/jobs/JobStatusBadge'
 import { formatPayRate } from '@/lib/utils/formatCurrency'
 import { formatDate } from '@/lib/utils/formatDate'
 import { EmptyState } from '@/components/shared/EmptyState'
-import { Briefcase, PlusCircle, Eye, MapPin, TrendingUp, BarChart2, ArrowUpRight, Clock } from 'lucide-react'
+import { Briefcase, PlusCircle, Eye, MapPin, TrendingUp, ArrowUpRight, Clock } from 'lucide-react'
 import { getCurrentUserAction, getMyJobsAction } from '@/lib/supabase/actions'
 
 export const metadata: Metadata = { title: 'My Listings — WorkBridge UK' }

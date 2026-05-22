@@ -10,8 +10,9 @@ import { JobCard, JobCardSkeleton } from '@/components/jobs/JobCard'
 import { MOCK_JOBS, MOCK_WORKER_PROFILES } from '@/lib/mock/data'
 import { ProfileCard } from '@/components/profiles/ProfileCard'
 import { getJobListingsAction, getWorkerProfilesAction } from '@/lib/supabase/actions'
+import type { JobListing, WorkerProfile } from '@/types'
 import {
-  HardHat, Search, MapPin, ArrowRight, Star, CheckCircle,
+  Search, MapPin, ArrowRight, Star, CheckCircle,
   ChevronRight, TrendingUp, Users, Briefcase, Zap, Shield,
   Clock, Building2, PlusCircle
 } from 'lucide-react'
@@ -112,8 +113,8 @@ export default function HomePage() {
   const router = useRouter()
   const [profession, setProfession] = useState('')
   const [location, setLocation] = useState('')
-  const [jobs, setJobs] = useState<any[]>([])
-  const [workers, setWorkers] = useState<any[]>([])
+  const [jobs, setJobs] = useState<JobListing[]>([])
+  const [workers, setWorkers] = useState<WorkerProfile[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { MapPin, Globe, Phone, CheckCircle, Users, Building2, Briefcase, Star, Clock } from 'lucide-react'
+import { MapPin, Globe, Phone, CheckCircle, Users, Building2, Briefcase } from 'lucide-react'
 import type { WorkerProfile } from '@/types'
 
 interface ProfileCardProps {

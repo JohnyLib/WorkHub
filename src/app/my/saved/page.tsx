@@ -7,6 +7,7 @@ import { JobCard } from '@/components/jobs/JobCard'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Heart } from 'lucide-react'
 import { getCurrentUserAction, getSavedListingsAction } from '@/lib/supabase/actions'
+import type { JobListing } from '@/types'
 
 export const metadata: Metadata = { title: 'Saved Jobs' }
 
@@ -14,7 +15,7 @@ export default async function SavedPage() {
   const user = await getCurrentUserAction()
   const role = user?.role ?? 'both'
   const savedListings = await getSavedListingsAction()
-  const savedJobs = savedListings.map((s) => s.listing).filter(Boolean) as any[]
+  const savedJobs = savedListings.map((s) => s.listing).filter(Boolean) as JobListing[]
 
   return (
     <>

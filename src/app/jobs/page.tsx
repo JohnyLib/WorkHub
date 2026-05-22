@@ -13,6 +13,7 @@ import { SearchX, TrendingDown, TrendingUp, Clock, Eye, ChevronDown } from 'luci
 import { toast } from 'sonner'
 import { getJobListingsAction, getSavedListingsAction, toggleSaveListingAction } from '@/lib/supabase/actions'
 import Link from 'next/link'
+import type { JobListing } from '@/types'
 
 interface Filters {
   profession: string
@@ -37,7 +38,7 @@ export default function JobsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [jobs, setJobs] = useState<any[]>([])
+  const [jobs, setJobs] = useState<JobListing[]>([])
   const [loading, setLoading] = useState(true)
   const [saved, setSaved] = useState<Set<string>>(new Set())
   const [sort, setSort] = useState<SortKey>('newest')

@@ -10,6 +10,7 @@ import { MOCK_WORKER_PROFILES } from '@/lib/mock/data'
 import { Users, X, Search, Briefcase, Building2 } from 'lucide-react'
 import { getWorkerProfilesAction } from '@/lib/supabase/actions'
 import Link from 'next/link'
+import type { WorkerProfile } from '@/types'
 
 const TYPES = [
   { value: '',        label: 'All',        icon: Users },
@@ -19,7 +20,7 @@ const TYPES = [
 ]
 
 export default function MastersPage() {
-  const [profiles, setProfiles] = useState<any[]>([])
+  const [profiles, setProfiles] = useState<WorkerProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState('')
   const [search, setSearch] = useState('')

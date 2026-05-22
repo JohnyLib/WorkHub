@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { X, ChevronRight, ChevronLeft, Sparkles, HelpCircle } from 'lucide-react'
+import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react'
 
 interface TourStep {
   selector: string
@@ -71,15 +71,29 @@ export default function OnboardingTour() {
   const steps = pathname === '/jobs' ? JOBS_STEPS : pathname === '/' ? HOME_STEPS : []
   const step = steps[currentStepIndex]
 
+  // Reset rect via derived state when current step selector or active changes
+  const currentSelector = active && step ? step.selector : null
+  const [prevSelector, setPrevSelector] = useState<string | null>(null)
+  if (currentSelector !== prevSelector) {
+    setPrevSelector(currentSelector)
+    setRect(null)
+  }
+
   // Track window dimensions
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setWindowSize({ width: window.innerWidth, height: window.innerHeight })
+      const timer = setTimeout(() => {
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight })
+      }, 0)
+      
       const handleResize = () => {
         setWindowSize({ width: window.innerWidth, height: window.innerHeight })
       }
       window.addEventListener('resize', handleResize)
-      return () => window.removeEventListener('resize', handleResize)
+      return () => {
+        clearTimeout(timer)
+        window.removeEventListener('resize', handleResize)
+      }
     }
   }, [])
 
@@ -114,13 +128,7 @@ export default function OnboardingTour() {
 
   // Element coordinate tracker with scrolling & resizing support
   useEffect(() => {
-    if (!active || !step) {
-      setRect(null)
-      return
-    }
-
-    if (!step.selector) {
-      setRect(null)
+    if (!active || !step || !step.selector) {
       return
     }
 
@@ -162,9 +170,12 @@ export default function OnboardingTour() {
         window.removeEventListener('scroll', updateCoordinates)
       }
     } else {
-      setRect(null)
+      const timer = setTimeout(() => {
+        setRect(null)
+      }, 0)
+      return () => clearTimeout(timer)
     }
-  }, [currentStepIndex, active, step?.selector, windowSize.width, pathname])
+  }, [currentStepIndex, active, step, windowSize.width, pathname])
 
   if (!active || !step) return null
 

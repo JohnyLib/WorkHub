@@ -23,6 +23,8 @@ const inputCls = 'w-full px-3 py-3 border border-slate-200 rounded-xl text-sm fo
 import { useRouter } from 'next/navigation'
 import { getCurrentUserAction, getWorkerProfileByUserIdAction, upsertWorkerProfileAction } from '@/lib/supabase/actions'
 
+import { WorkerType } from '@/types'
+
 export default function EditProfilePage() {
   const router = useRouter()
   const [type, setType] = useState<ProfileType>('master')
@@ -32,15 +34,19 @@ export default function EditProfilePage() {
   const [workAreas, setWorkAreas] = useState('')
   const [phone, setPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [workerProfileId, setWorkerProfileId] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadData() {
       try {
         const user = await getCurrentUserAction()
         if (user) {
+          setUserId(user.id)
           setName(user.full_name || '')
           const wp = await getWorkerProfileByUserIdAction(user.id)
           if (wp) {
+            setWorkerProfileId(wp.id)
             setType(wp.type as ProfileType)
             setName(wp.display_name || user.full_name || '')
             setBio(wp.bio || '')
@@ -65,7 +71,7 @@ export default function EditProfilePage() {
     try {
       const areas = workAreas.split(',').map((a) => a.trim()).filter(Boolean)
       const res = await upsertWorkerProfileAction({
-        type: type as any,
+        type: type as WorkerType,
         display_name: name,
         bio: bio,
         specializations: specializations,
@@ -74,14 +80,18 @@ export default function EditProfilePage() {
       })
 
       if (res.success) {
+        if (res.id) {
+          setWorkerProfileId(res.id)
+        }
         toast.success('Profile updated successfully!')
         router.push('/my/profile')
         router.refresh()
       } else {
         toast.error(res.error || 'Failed to update profile.')
       }
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred while saving.')
+    } catch (err) {
+      const error = err as Error
+      toast.error(error.message || 'An error occurred while saving.')
     } finally {
       setSubmitting(false)
     }
@@ -169,7 +179,13 @@ export default function EditProfilePage() {
               {/* Photo Upload component */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Portfolio Photos</label>
-                <PhotoUpload />
+                {userId ? (
+                  <PhotoUpload workerProfileId={workerProfileId} userId={userId} />
+                ) : (
+                  <div className="animate-pulse bg-slate-200 rounded-xl h-32 flex items-center justify-center text-xs text-slate-400">
+                    Loading photo upload…
+                  </div>
+                )}
               </div>
 
               <div className="pt-4">

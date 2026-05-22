@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { MapPin, Users, Wrench, Eye, Clock, Bookmark, ArrowUpRight, MessageCircle, Banknote, Zap } from 'lucide-react'
-import { formatPayRate } from '@/lib/utils/formatCurrency'
 import { formatDate } from '@/lib/utils/formatDate'
 import type { JobListing } from '@/types'
 
