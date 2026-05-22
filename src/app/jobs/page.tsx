@@ -145,14 +145,16 @@ export default function JobsPage() {
           </p>
         </div>
 
-        <div className="flex gap-8 items-start">
+        <div className="lg:flex lg:gap-8 items-start">
           {/* Filters */}
-          <JobFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onReset={handleReset}
-            resultCount={filtered.length}
-          />
+          <div className="hidden lg:block">
+            <JobFilters
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onReset={handleReset}
+              resultCount={filtered.length}
+            />
+          </div>
 
           {/* Results */}
           <div className="flex-1 min-w-0">
