@@ -12,40 +12,51 @@ import {
   UserCircle,
   ShieldCheck,
   LogOut,
+  Settings
 } from 'lucide-react'
 
 const EMPLOYER_LINKS = [
-  { href: '/my/listings', label: 'My Listings', icon: Briefcase },
-  { href: '/my/post-job', label: 'Post a Job', icon: PlusCircle },
+  { href: '/my/listings', label: 'Мои вакансии', icon: Briefcase },
+  { href: '/my/post-job', label: 'Опубликовать вакансию', icon: PlusCircle },
 ]
 
 const WORKER_LINKS = [
-  { href: '/my/profile', label: 'My Profile', icon: UserCircle },
-  { href: '/my/create-profile', label: 'Worker Profile', icon: User },
-  { href: '/my/saved', label: 'Saved Jobs', icon: Heart },
+  { href: '/my/profile', label: 'Мой профиль / CV', icon: UserCircle },
+  { href: '/my/saved', label: 'Сохранённые вакансии', icon: Heart },
+]
+
+const PRIVATE_LINKS = [
+  { href: '/my/short-work', label: 'Мои заявки', icon: Briefcase },
+  { href: '/my/short-work/new', label: 'Опубликовать заявку', icon: PlusCircle },
 ]
 
 const ADMIN_LINKS = [
-  { href: '/admin', label: 'Admin Panel', icon: ShieldCheck },
+  { href: '/admin', label: 'Панель администратора', icon: ShieldCheck },
 ]
 
 interface SidebarProps {
-  role?: 'employer' | 'worker' | 'both' | 'admin'
+  role?: 'company' | 'agency' | 'worker' | 'private' | 'admin' | 'employer' | 'both'
   userName?: string
   userEmail?: string
 }
 
-export default function Sidebar({ role = 'both', userName, userEmail }: SidebarProps) {
+export default function Sidebar({ role = 'worker', userName, userEmail }: SidebarProps) {
   const pathname = usePathname()
 
-  const links = [
-    ...(role === 'employer' || role === 'both' || role === 'admin' ? EMPLOYER_LINKS : []),
-    ...(role === 'worker' || role === 'both' || role === 'admin' ? WORKER_LINKS : []),
-    ...(role === 'admin' ? ADMIN_LINKS : []),
-  ]
+  let links: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = []
+
+  if (role === 'company' || role === 'agency' || role === 'employer' || role === 'both') {
+    links = EMPLOYER_LINKS
+  } else if (role === 'worker') {
+    links = WORKER_LINKS
+  } else if (role === 'private') {
+    links = PRIVATE_LINKS
+  } else if (role === 'admin') {
+    links = ADMIN_LINKS
+  }
 
   const initials = userName
-    ? userName.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+    ? userName.split(' ').map((w) => w ? w[0] : '').join('').slice(0, 2).toUpperCase()
     : 'U'
 
   return (
@@ -68,7 +79,7 @@ export default function Sidebar({ role = 'both', userName, userEmail }: SidebarP
         <div className="px-3 py-1 mb-0.5">
           <div className="flex items-center gap-2">
             <LayoutDashboard className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dashboard</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Кабинет</span>
           </div>
         </div>
 
@@ -88,17 +99,30 @@ export default function Sidebar({ role = 'both', userName, userEmail }: SidebarP
               <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
               {label}
             </Link>
-          )
-        })}
+          )}
+        )}
+
+        {/* Settings link for everyone */}
+        <Link
+          href="/my/edit-profile"
+          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+            pathname === '/my/edit-profile'
+              ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+          }`}
+        >
+          <Settings className={`w-4 h-4 shrink-0 ${pathname === '/my/edit-profile' ? 'text-white' : 'text-slate-400'}`} />
+          Настройки
+        </Link>
 
         {/* Sign out */}
         <div className="mt-2 border-t border-slate-50 pt-2">
           <button
             onClick={async () => { await signOutAction(); window.location.href = '/' }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all w-full text-left"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all w-full text-left cursor-pointer"
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            Sign Out
+            Выйти
           </button>
         </div>
       </div>

@@ -2,18 +2,81 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Search, Users, PlusCircle, User } from 'lucide-react'
-
-const NAV = [
-  { href: '/',           label: 'Home',    icon: Home },
-  { href: '/jobs',       label: 'Jobs',    icon: Search },
-  { href: '/my/post-job',label: 'Post',    icon: PlusCircle, primary: true },
-  { href: '/masters',    label: 'Workers', icon: Users },
-  { href: '/my/profile', label: 'Profile', icon: User },
-]
+import { Home, Search, Users, PlusCircle, User, Star } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function MobileNav() {
   const pathname = usePathname()
+  const [role, setRole] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setIsLoggedIn(true)
+        supabase.from('profiles').select('role').eq('id', user.id).single().then(({ data }) => {
+          if (data) setRole(data.role)
+        })
+      } else {
+        setIsLoggedIn(false)
+        setRole(null)
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const u = session?.user
+      if (u) {
+        setIsLoggedIn(true)
+        supabase.from('profiles').select('role').eq('id', u.id).single().then(({ data }) => {
+          if (data) setRole(data.role)
+        })
+      } else {
+        setIsLoggedIn(false)
+        setRole(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Dynamic bottom menu configuration based on role
+  let navItems = [
+    { href: '/',           label: 'Главная',    icon: Home },
+    { href: '/jobs',       label: 'Вакансии',    icon: Search },
+    { href: '/masters',    label: 'Мастера',    icon: Users },
+    { href: '/login',      label: 'Войти',      icon: PlusCircle, primary: true },
+    { href: '/login',      label: 'Кабинет',    icon: User },
+  ]
+
+  if (isLoggedIn) {
+    if (role === 'company' || role === 'agency') {
+      navItems = [
+        { href: '/',           label: 'Главная',    icon: Home },
+        { href: '/jobs',       label: 'Вакансии',    icon: Search },
+        { href: '/masters',    label: 'Мастера',    icon: Users },
+        { href: '/my/post-job',label: 'Опубликовать',icon: PlusCircle, primary: true },
+        { href: '/my/listings',label: 'Кабинет',    icon: User },
+      ]
+    } else if (role === 'worker') {
+      navItems = [
+        { href: '/',           label: 'Главная',    icon: Home },
+        { href: '/jobs',       label: 'Вакансии',    icon: Search },
+        { href: '/masters',    label: 'Мастера',    icon: Users },
+        { href: '/my/saved',   label: 'Сохранённые', icon: Star, primary: true },
+        { href: '/my/profile', label: 'Кабинет',    icon: User },
+      ]
+    } else if (role === 'private') {
+      navItems = [
+        { href: '/',           label: 'Главная',    icon: Home },
+        { href: '/jobs',       label: 'Вакансии',    icon: Search },
+        { href: '/masters',    label: 'Мастера',    icon: Users },
+        { href: '/my/short-work/new', label: 'Новая заявка', icon: PlusCircle, primary: true },
+        { href: '/my/short-work',     label: 'Кабинет',      icon: User },
+      ]
+    }
+  }
 
   return (
     <nav
@@ -26,23 +89,22 @@ export default function MobileNav() {
         className="flex items-center justify-around px-2 py-2 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/70"
         style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)' }}
       >
-        {NAV.map(({ href, label, icon: Icon, primary }) => {
+        {navItems.map(({ href, label, icon: Icon, primary }) => {
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
 
           if (primary) {
             return (
               <Link
-                key={href}
+                key={`${href}-${label}`}
                 href={href}
                 aria-label={label}
                 className="relative flex flex-col items-center gap-1 -mt-6"
               >
                 {/* Pulse ring */}
                 <span
-                  className="absolute inset-0 rounded-2xl"
+                  className="absolute inset-0 rounded-2xl animate-pulse"
                   style={{
                     background: 'rgba(37,99,235,0.2)',
-                    animation: 'pulse-ring 2.5s ease-out infinite',
                     borderRadius: '18px',
                   }}
                 />
@@ -62,7 +124,7 @@ export default function MobileNav() {
 
           return (
             <Link
-              key={href}
+              key={`${href}-${label}`}
               href={href}
               aria-label={label}
               className="flex flex-col items-center gap-1 py-1 px-3 min-w-[56px] group"

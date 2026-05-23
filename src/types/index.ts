@@ -1,6 +1,6 @@
 // ─── Database Row Types ────────────────────────────────────────────────────
 
-export type UserRole = 'employer' | 'worker' | 'both' | 'admin'
+export type UserRole = 'company' | 'agency' | 'worker' | 'private' | 'admin' | 'employer' | 'both'
 export type PayType = 'day' | 'hour' | 'sqm' | 'negotiable'
 export type ListingStatus = 'draft' | 'pending' | 'published' | 'expired'
 export type WorkerType = 'master' | 'company' | 'agency'
@@ -14,6 +14,8 @@ export interface Profile {
   id: string
   role: UserRole
   full_name: string | null
+  phone: string | null
+  onboarding_complete: boolean
   lang: Locale
   avatar_url: string | null
   country: Country
@@ -85,10 +87,67 @@ export interface WorkerProfile {
   contact_email: string | null
   messengers: string[]
   created_at: string
+  profession?: string | null
+  experience?: string | null
+  work_cities?: string[] | null
   // Joined
   profile?: Profile
   portfolio_photos?: PortfolioPhoto[]
 }
+
+export interface CompanyProfile {
+  id: string
+  profile_id: string
+  company_name: string
+  company_type: string | null
+  contact_name: string | null
+  contact_position: string | null
+  phone: string | null
+  email: string | null
+  website: string | null
+  city: string | null
+  postcode: string | null
+  founded_year: number | null
+  company_size: string | null
+  logo_url: string | null
+  description: string | null
+  specializations: string[] | null
+  regions: string[] | null
+  languages: string[] | null
+  messengers: any | null
+  portfolio_photos: string[] | null
+  created_at: string
+}
+
+export interface AgencyProfile {
+  id: string
+  profile_id: string
+  agency_name: string
+  contact_name: string | null
+  contact_position: string | null
+  phone: string | null
+  email: string | null
+  website: string | null
+  rec_license: boolean | null
+  registration_number: string | null
+  description: string | null
+  contract_types: string[] | null
+  specializations: string[] | null
+  regions: string[] | null
+  languages: string[] | null
+  logo_url: string | null
+  created_at: string
+}
+
+export interface PrivateProfile {
+  id: string
+  profile_id: string
+  display_name: string
+  phone: string | null
+  city: string | null
+  created_at: string
+}
+
 
 export interface PortfolioPhoto {
   id: string

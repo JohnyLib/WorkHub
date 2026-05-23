@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import {
   Menu, X, HardHat, Bell, User, LogOut, Briefcase,
-  ChevronDown, Settings, HelpCircle, Sparkles, ArrowRight
+  ChevronDown, Settings, HelpCircle, Sparkles, ArrowRight, Star, PlusCircle
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { signOutAction } from '@/lib/supabase/actions'
@@ -14,6 +14,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 const NAV_LINKS = [
   { href: '/jobs',        label: 'Find Work',    emoji: '🔍' },
+  { href: '/hourly',      label: 'Hourly Work',  emoji: '⏱️' },
   { href: '/masters',     label: 'Find Workers', emoji: '👷' },
   { href: '/my/post-job', label: 'Post a Job',   emoji: '✚',  highlight: true },
 ]
@@ -22,6 +23,7 @@ export default function Header() {
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [scrolled, setScrolled]       = useState(false)
   const [user, setUser]               = useState<SupabaseUser | null>(null)
+  const [role, setRole]               = useState<string | null>(null)
   const [loading, setLoading]         = useState(true)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -54,6 +56,17 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
+    if (!user) {
+      setRole(null)
+      return
+    }
+    const supabase = createClient()
+    supabase.from('profiles').select('role').eq('id', user.id).single().then(({ data }) => {
+      if (data) setRole(data.role)
+    })
+  }, [user])
+
+  useEffect(() => {
     const handle = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
     }
@@ -71,8 +84,34 @@ export default function Header() {
   const displayName = user?.user_metadata?.full_name || user?.email || 'My Account'
 
   const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href)
-
   const isSolid = scrolled || pathname !== '/'
+
+  // Dynamic user menu dropdown links based on role
+  let menuItems = [
+    { href: '/my/profile', icon: User, label: 'Мой профиль / CV' },
+    { href: '/my/saved', icon: Star, label: 'Сохранённые вакансии' }
+  ]
+
+  let defaultDashboard = '/my/profile'
+
+  if (role === 'company' || role === 'agency') {
+    menuItems = [
+      { href: '/my/listings', icon: Briefcase, label: 'Мои вакансии' },
+      { href: '/my/post-job', icon: Sparkles, label: 'Опубликовать вакансию' }
+    ]
+    defaultDashboard = '/my/listings'
+  } else if (role === 'private') {
+    menuItems = [
+      { href: '/my/short-work', icon: Briefcase, label: 'Мои заявки' },
+      { href: '/my/short-work/new', icon: PlusCircle, label: 'Опубликовать заявку' }
+    ]
+    defaultDashboard = '/my/short-work'
+  } else if (role === 'admin') {
+    menuItems = [
+      { href: '/admin', icon: Settings, label: 'Панель администратора' }
+    ]
+    defaultDashboard = '/admin'
+  }
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -86,7 +125,7 @@ export default function Header() {
           {/* ── Logo ── */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0" aria-label="WorkBridge UK">
             <div className="relative">
-              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 group-hover:scale-105 transition-all duration-200">
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 group-hover:scale-105 transition-all duration-200">
                 <HardHat className="w-5 h-5 text-white" />
               </div>
               <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
@@ -108,11 +147,20 @@ export default function Header() {
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href)
               if (link.highlight) {
+                if (role === 'worker') {
+                  return (
+                    <Link key={link.href} href="/my/profile"
+                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-200 ml-2">
+                      <User className="w-3.5 h-3.5" />
+                      My Profile / CV
+                    </Link>
+                  )
+                }
                 return (
-                  <Link key={link.href} href={link.href}
+                  <Link key={link.href} href={role === 'private' ? '/my/short-work/new' : link.href}
                     className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-200 ml-2">
                     <Sparkles className="w-3.5 h-3.5" />
-                    {link.label}
+                    {role === 'private' ? 'New Job Listing' : link.label}
                   </Link>
                 )
               }
@@ -186,13 +234,11 @@ export default function Header() {
                           </div>
                         </div>
                         <div className="h-px bg-slate-50 mx-3 my-1" />
-                        {[
-                          { href: '/my/profile',  icon: User,     label: 'My Profile' },
-                          { href: '/my/listings', icon: Briefcase,label: 'My Listings' },
-                          { href: '/my/post-job', icon: Settings,  label: 'Post a Job' },
-                        ].map(({ href, icon: Icon, label }) => (
+                        
+                        {/* Role specific items */}
+                        {menuItems.map(({ href, icon: Icon, label }) => (
                           <Link key={href} href={href}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group/item"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group/item font-semibold"
                             onClick={() => setUserMenuOpen(false)}>
                             <span className="w-7 h-7 rounded-lg bg-slate-50 group-hover/item:bg-blue-100 flex items-center justify-center transition-colors">
                               <Icon className="w-3.5 h-3.5 text-slate-400 group-hover/item:text-blue-600 transition-colors" />
@@ -201,14 +247,29 @@ export default function Header() {
                             <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover/item:opacity-100 transition-opacity" />
                           </Link>
                         ))}
+                        
+                        {/* Separator */}
+                        <div className="h-px bg-slate-50 mx-3 my-1" />
+                        
+                        {/* Settings item */}
+                        <Link href="/my/edit-profile"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition-colors group/item font-semibold"
+                          onClick={() => setUserMenuOpen(false)}>
+                          <span className="w-7 h-7 rounded-lg bg-slate-50 group-hover/item:bg-blue-100 flex items-center justify-center transition-colors">
+                            <Settings className="w-3.5 h-3.5 text-slate-400 group-hover/item:text-blue-600 transition-colors" />
+                          </span>
+                          Настройки
+                          <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                        </Link>
+
                         <div className="h-px bg-slate-50 mx-3 my-1" />
                         <button
                           onClick={async () => { setUserMenuOpen(false); await signOutAction(); window.location.href = '/' }}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left group/item">
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left group/item font-semibold">
                           <span className="w-7 h-7 rounded-lg bg-slate-50 group-hover/item:bg-red-100 flex items-center justify-center transition-colors">
                             <LogOut className="w-3.5 h-3.5 text-slate-400 group-hover/item:text-red-500 transition-colors" />
                           </span>
-                          Sign Out
+                          Выйти
                         </button>
                       </div>
                     )}
@@ -220,11 +281,11 @@ export default function Header() {
                     className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
                       isSolid ? 'text-slate-700 hover:bg-slate-100' : 'text-white/90 hover:bg-white/10'
                     }`}>
-                    Sign In
+                    Войти
                   </Link>
-                  <Link href="/login?tab=register"
+                  <Link href="/register"
                     className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl shadow-lg shadow-blue-600/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-200">
-                    Register Free
+                    Зарегистрироваться
                   </Link>
                 </div>
               )
@@ -255,9 +316,20 @@ export default function Header() {
 
           <div className="px-4 py-4 space-y-1">
             {NAV_LINKS.map((link, i) => {
-              const active = isActive(link.href)
+              let href = link.href
+              let label = link.label
+              if (link.highlight) {
+                if (role === 'worker') {
+                  href = '/my/profile'
+                  label = 'My Profile / CV'
+                } else if (role === 'private') {
+                  href = '/my/short-work/new'
+                  label = 'New Job Listing'
+                }
+              }
+              const active = isActive(href)
               return (
-                <Link key={link.href} href={link.href}
+                <Link key={link.href} href={href}
                   className={`flex items-center gap-3 px-4 py-3.5 text-sm font-semibold rounded-2xl transition-all animate-fade-in-up ${
                     link.highlight
                       ? 'text-white bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-500/25'
@@ -267,7 +339,7 @@ export default function Header() {
                   }`}
                   style={{ animationDelay: `${i * 0.04}s` }}>
                   <span className="text-base">{link.emoji}</span>
-                  {link.label}
+                  {label}
                 </Link>
               )
             })}
@@ -283,27 +355,36 @@ export default function Header() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-bold text-slate-900 truncate">{displayName.split('@')[0]}</p>
-                    <p className="text-xs text-slate-400">View dashboard</p>
+                    <p className="text-xs text-slate-400">Личный кабинет</p>
                   </div>
                 </div>
-                <Link href="/my/listings" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-all">
-                  <Briefcase className="w-4 h-4 text-slate-400" /> My Dashboard
+
+                {/* Role specific mobile items */}
+                {menuItems.map(({ href, icon: Icon, label }) => (
+                  <Link key={href} href={href} className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-all">
+                    <Icon className="w-4 h-4 text-slate-400" /> {label}
+                  </Link>
+                ))}
+
+                <Link href="/my/edit-profile" className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-all">
+                  <Settings className="w-4 h-4 text-slate-400" /> Настройки
                 </Link>
+
                 <button
                   onClick={async () => { await signOutAction(); window.location.href = '/' }}
                   className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-all w-full text-left">
-                  <LogOut className="w-4 h-4" /> Sign Out
+                  <LogOut className="w-4 h-4" /> Выйти
                 </button>
               </div>
             ) : (
               <div className="space-y-2 pt-1">
-                <Link href="/login?tab=register"
+                <Link href="/register"
                   className="flex items-center justify-center gap-2 px-4 py-4 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl shadow-lg shadow-blue-500/25 min-h-[52px]">
-                  <Sparkles className="w-4 h-4" /> Register Free — It&apos;s Quick
+                  <Sparkles className="w-4 h-4" /> Зарегистрироваться бесплатно
                 </Link>
                 <Link href="/login"
                   className="flex items-center justify-center px-4 py-3.5 text-sm font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all min-h-[48px]">
-                  Sign In to Your Account
+                  Войти в аккаунт
                 </Link>
               </div>
             )}

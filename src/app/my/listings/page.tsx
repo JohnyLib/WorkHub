@@ -11,11 +11,13 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import { Briefcase, PlusCircle, Eye, MapPin, TrendingUp, ArrowUpRight, Clock } from 'lucide-react'
 import { getCurrentUserAction, getMyJobsAction } from '@/lib/supabase/actions'
 
+import { WelcomeBanner } from '@/components/shared/WelcomeBanner'
+
 export const metadata: Metadata = { title: 'My Listings — WorkBridge UK' }
 
 export default async function MyListingsPage() {
   const user = await getCurrentUserAction()
-  const role = user?.role ?? 'employer'
+  const role = user?.role ?? 'company'
   const myJobs = await getMyJobsAction()
 
   const activeCount = myJobs.filter((j) => j.status === 'published').length
@@ -27,11 +29,13 @@ export default async function MyListingsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-24 md:pb-10">
         <div className="flex gap-8 items-start">
           <Sidebar
-            role={role}
+            role={role as any}
             userName={user?.full_name || undefined}
             userEmail={user?.email}
           />
           <div className="flex-1 min-w-0 space-y-5">
+            
+            <WelcomeBanner role={role as any} />
 
             {/* Header */}
             <div className="flex items-center justify-between">

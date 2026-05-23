@@ -9,7 +9,10 @@ import type {
   SavedListing,
   MessengerType,
   PayType,
-  WorkerType
+  WorkerType,
+  CompanyProfile,
+  AgencyProfile,
+  PrivateProfile
 } from '@/types'
 
 function isDynamicServerError(err: unknown): boolean {
@@ -105,6 +108,9 @@ export async function upsertWorkerProfileAction(data: {
   contact_phone: string
   contact_email?: string
   messengers?: string[]
+  profession?: string
+  experience?: string
+  work_cities?: string[]
 }) {
   try {
     const supabase = await createClient()
@@ -129,7 +135,10 @@ export async function upsertWorkerProfileAction(data: {
       contact_phone: data.contact_phone,
       contact_email: data.contact_email ?? user.email ?? null,
       messengers: data.messengers ?? ['whatsapp'],
-      country: 'uk'
+      country: 'uk',
+      profession: data.profession || null,
+      experience: data.experience || null,
+      work_cities: data.work_cities || null
     }
 
     let error
@@ -153,6 +162,16 @@ export async function upsertWorkerProfileAction(data: {
     }
 
     if (error) throw error
+
+    // Sync user full_name and phone in auth/profiles if updated
+    await supabase
+      .from('profiles')
+      .update({ 
+        full_name: data.display_name || user.user_metadata?.full_name || '', 
+        phone: data.contact_phone || user.user_metadata?.phone || '' 
+      })
+      .eq('id', user.id)
+
     revalidatePath('/masters')
     revalidatePath('/my/profile')
     return { success: true, id }
@@ -161,6 +180,279 @@ export async function upsertWorkerProfileAction(data: {
     return { success: false, error: error instanceof Error ? error.message : String(error) }
   }
 }
+
+// ─── COMPANY PROFILE ACTIONS ──────────────────────────────────────────────────
+
+export async function getCompanyProfileByUserIdAction(userId: string): Promise<CompanyProfile | null> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('company_profiles')
+      .select('*')
+      .eq('profile_id', userId)
+      .maybeSingle()
+
+    if (error) throw error
+    return data as CompanyProfile | null
+  } catch (error) {
+    if (isDynamicServerError(error)) throw error
+    console.error('Error in getCompanyProfileByUserIdAction:', error)
+    return null
+  }
+}
+
+export async function upsertCompanyProfileAction(data: {
+  company_name: string
+  company_type?: string
+  contact_name?: string
+  contact_position?: string
+  phone?: string
+  email?: string
+  website?: string
+  city?: string
+  postcode?: string
+  founded_year?: number
+  company_size?: string
+  description?: string
+  languages?: string[]
+}) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const existing = await getCompanyProfileByUserIdAction(user.id)
+
+    const payload = {
+      profile_id: user.id,
+      company_name: data.company_name,
+      company_type: data.company_type || '',
+      contact_name: data.contact_name || '',
+      contact_position: data.contact_position || '',
+      phone: data.phone || '',
+      email: data.email || user.email || '',
+      website: data.website || '',
+      city: data.city || '',
+      postcode: data.postcode || '',
+      founded_year: data.founded_year || null,
+      company_size: data.company_size || '',
+      description: data.description || '',
+      languages: data.languages || existing?.languages || ['English'],
+    }
+
+    let error
+    let id = existing?.id
+    if (existing) {
+      const { error: err } = await supabase
+        .from('company_profiles')
+        .update(payload)
+        .eq('id', existing.id)
+      error = err
+    } else {
+      const { data: inserted, error: err } = await supabase
+        .from('company_profiles')
+        .insert(payload)
+        .select()
+        .single()
+      error = err
+      if (inserted) {
+        id = inserted.id
+      }
+    }
+
+    if (error) throw error
+
+    // Sync user full_name and phone in auth/profiles if updated
+    await supabase
+      .from('profiles')
+      .update({ 
+        full_name: data.contact_name || user.user_metadata?.full_name || '', 
+        phone: data.phone || user.user_metadata?.phone || '' 
+      })
+      .eq('id', user.id)
+
+    revalidatePath('/my/profile')
+    return { success: true, id }
+  } catch (error) {
+    console.error('Error in upsertCompanyProfileAction:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+// ─── AGENCY PROFILE ACTIONS ───────────────────────────────────────────────────
+
+export async function getAgencyProfileByUserIdAction(userId: string): Promise<AgencyProfile | null> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('agency_profiles')
+      .select('*')
+      .eq('profile_id', userId)
+      .maybeSingle()
+
+    if (error) throw error
+    return data as AgencyProfile | null
+  } catch (error) {
+    if (isDynamicServerError(error)) throw error
+    console.error('Error in getAgencyProfileByUserIdAction:', error)
+    return null
+  }
+}
+
+export async function upsertAgencyProfileAction(data: {
+  agency_name: string
+  contact_name?: string
+  contact_position?: string
+  phone?: string
+  email?: string
+  website?: string
+  registration_number?: string
+  description?: string
+  contract_types?: string[]
+  specializations?: string[]
+  regions?: string[]
+  languages?: string[]
+}) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const existing = await getAgencyProfileByUserIdAction(user.id)
+
+    const payload = {
+      profile_id: user.id,
+      agency_name: data.agency_name,
+      contact_name: data.contact_name || '',
+      contact_position: data.contact_position || '',
+      phone: data.phone || '',
+      email: data.email || user.email || '',
+      website: data.website || '',
+      registration_number: data.registration_number || '',
+      description: data.description || '',
+      contract_types: data.contract_types || existing?.contract_types || ['CIS'],
+      specializations: data.specializations || existing?.specializations || [],
+      regions: data.regions || existing?.regions || ['London'],
+      languages: data.languages || existing?.languages || ['English'],
+    }
+
+    let error
+    let id = existing?.id
+    if (existing) {
+      const { error: err } = await supabase
+        .from('agency_profiles')
+        .update(payload)
+        .eq('id', existing.id)
+      error = err
+    } else {
+      const { data: inserted, error: err } = await supabase
+        .from('agency_profiles')
+        .insert(payload)
+        .select()
+        .single()
+      error = err
+      if (inserted) {
+        id = inserted.id
+      }
+    }
+
+    if (error) throw error
+
+    // Sync user full_name and phone in auth/profiles if updated
+    await supabase
+      .from('profiles')
+      .update({ 
+        full_name: data.contact_name || user.user_metadata?.full_name || '', 
+        phone: data.phone || user.user_metadata?.phone || '' 
+      })
+      .eq('id', user.id)
+
+    revalidatePath('/my/profile')
+    return { success: true, id }
+  } catch (error) {
+    console.error('Error in upsertAgencyProfileAction:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+// ─── PRIVATE PROFILE ACTIONS ──────────────────────────────────────────────────
+
+export async function getPrivateProfileByUserIdAction(userId: string): Promise<PrivateProfile | null> {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('private_profiles')
+      .select('*')
+      .eq('profile_id', userId)
+      .maybeSingle()
+
+    if (error) throw error
+    return data as PrivateProfile | null
+  } catch (error) {
+    if (isDynamicServerError(error)) throw error
+    console.error('Error in getPrivateProfileByUserIdAction:', error)
+    return null
+  }
+}
+
+export async function upsertPrivateProfileAction(data: {
+  display_name: string
+  phone?: string
+  city?: string
+}) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const existing = await getPrivateProfileByUserIdAction(user.id)
+
+    const payload = {
+      profile_id: user.id,
+      display_name: data.display_name,
+      phone: data.phone || '',
+      city: data.city || '',
+    }
+
+    let error
+    let id = existing?.id
+    if (existing) {
+      const { error: err } = await supabase
+        .from('private_profiles')
+        .update(payload)
+        .eq('id', existing.id)
+      error = err
+    } else {
+      const { data: inserted, error: err } = await supabase
+        .from('private_profiles')
+        .insert(payload)
+        .select()
+        .single()
+      error = err
+      if (inserted) {
+        id = inserted.id
+      }
+    }
+
+    if (error) throw error
+
+    // Sync user full_name and phone in auth/profiles if updated
+    await supabase
+      .from('profiles')
+      .update({ 
+        full_name: data.display_name || user.user_metadata?.full_name || '', 
+        phone: data.phone || user.user_metadata?.phone || '' 
+      })
+      .eq('id', user.id)
+
+    revalidatePath('/my/profile')
+    return { success: true, id }
+  } catch (error) {
+    console.error('Error in upsertPrivateProfileAction:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
 
 // ─── JOB LISTING ACTIONS ─────────────────────────────────────────────────────
 
@@ -481,3 +773,215 @@ export async function getWorkerByIdAction(id: string): Promise<WorkerProfile | n
     return null
   }
 }
+
+// ─── SHORT WORK ACTIONS ──────────────────────────────────────────────────────
+
+export async function createShortWorkAction(data: {
+  service_type: string
+  title: string
+  description?: string
+  photos?: string[]
+  address?: string
+  city?: string
+  postcode?: string
+  budget_type?: string
+  budget_amount?: number
+  payment_method?: string
+  urgency?: string
+  preferred_date?: string
+  preferred_time?: string
+  contact_name: string
+  contact_phone: string
+}) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const payload = {
+      profile_id: user.id,
+      service_type: data.service_type,
+      title: data.title,
+      description: data.description || null,
+      photos: data.photos || [],
+      address: data.address || null,
+      city: data.city || null,
+      postcode: data.postcode || null,
+      budget_type: data.budget_type || null,
+      budget_amount: data.budget_amount || null,
+      payment_method: data.payment_method || null,
+      urgency: data.urgency || null,
+      preferred_date: data.preferred_date || null,
+      preferred_time: data.preferred_time || null,
+      contact_name: data.contact_name,
+      contact_phone: data.contact_phone,
+      status: 'published'
+    }
+
+    const { data: inserted, error } = await supabase
+      .from('short_work_listings')
+      .insert(payload)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    revalidatePath('/hourly')
+    revalidatePath('/my/short-work')
+    return { success: true, id: inserted.id }
+  } catch (error) {
+    console.error('Error in createShortWorkAction:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+export async function getMyShortWorkListingsAction() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from('short_work_listings')
+      .select('*')
+      .eq('profile_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    if (isDynamicServerError(error)) throw error
+    console.error('Error in getMyShortWorkListingsAction:', error)
+    return []
+  }
+}
+
+export async function getPublicShortWorkListingsAction(filters?: {
+  service_type?: string
+  city?: string
+  urgency?: string
+}) {
+  try {
+    const supabase = await createClient()
+    let query = supabase
+      .from('short_work_listings')
+      .select('*')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+
+    if (filters?.service_type) {
+      query = query.eq('service_type', filters.service_type)
+    }
+    if (filters?.city) {
+      query = query.ilike('city', `%${filters.city}%`)
+    }
+    if (filters?.urgency) {
+      query = query.eq('urgency', filters.urgency)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    if (isDynamicServerError(error)) throw error
+    console.error('Error in getPublicShortWorkListingsAction:', error)
+    return []
+  }
+}
+
+export async function getShortWorkListingByIdAction(id: string) {
+  try {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('short_work_listings')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data || null
+  } catch (error) {
+    if (isDynamicServerError(error)) throw error
+    console.error('Error in getShortWorkListingByIdAction:', error)
+    return null
+  }
+}
+
+export async function updateShortWorkListingStatusAction(id: string, status: string) {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase
+      .from('short_work_listings')
+      .update({ status })
+      .eq('id', id)
+
+    if (error) throw error
+    revalidatePath('/my/short-work')
+    revalidatePath('/hourly')
+    return { success: true }
+  } catch (error) {
+    console.error('Error in updateShortWorkListingStatusAction:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+
+export async function updateShortWorkAction(id: string, data: {
+  service_type: string
+  title: string
+  description?: string
+  photos?: string[]
+  address?: string
+  city?: string
+  postcode?: string
+  budget_type?: string
+  budget_amount?: number
+  payment_method?: string
+  urgency?: string
+  preferred_date?: string
+  preferred_time?: string
+  contact_name: string
+  contact_phone: string
+}) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const payload = {
+      service_type: data.service_type,
+      title: data.title,
+      description: data.description || null,
+      photos: data.photos || [],
+      address: data.address || null,
+      city: data.city || null,
+      postcode: data.postcode || null,
+      budget_type: data.budget_type || null,
+      budget_amount: data.budget_amount || null,
+      payment_method: data.payment_method || null,
+      urgency: data.urgency || null,
+      preferred_date: data.preferred_date || null,
+      preferred_time: data.preferred_time || null,
+      contact_name: data.contact_name,
+      contact_phone: data.contact_phone,
+    }
+
+    const { data: updated, error } = await supabase
+      .from('short_work_listings')
+      .update(payload)
+      .eq('id', id)
+      .eq('profile_id', user.id)
+      .select()
+      .single()
+
+    if (error) throw error
+
+    revalidatePath('/hourly')
+    revalidatePath(`/hourly/${id}`)
+    revalidatePath('/my/short-work')
+    return { success: true, id: updated.id }
+  } catch (error) {
+    console.error('Error in updateShortWorkAction:', error)
+    return { success: false, error: error instanceof Error ? error.message : String(error) }
+  }
+}
+

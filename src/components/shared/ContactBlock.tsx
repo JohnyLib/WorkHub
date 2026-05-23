@@ -55,17 +55,16 @@ export function ContactBlock({
 }: ContactBlockProps) {
   if (!isLoggedIn) {
     return (
-      <div className="card p-6 text-center">
-        <div className="w-14 h-14 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+      <div className="card p-6 text-center border-slate-150">
+        <div className="w-14 h-14 bg-slate-100/80 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <Lock className="w-6 h-6 text-slate-400" />
         </div>
-        <h3 className="font-semibold text-slate-900 mb-1">Contact Details Hidden</h3>
-        <p className="text-sm text-slate-500 mb-5">Sign in to see phone, email and messaging links</p>
+        <p className="text-sm font-bold text-slate-800 mb-5">Войдите, чтобы увидеть контакты</p>
         <Link
           href={`/login?returnUrl=${encodeURIComponent(returnUrl)}`}
-          className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors min-h-[48px] shadow-lg shadow-blue-600/25"
+          className="inline-flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-500 transition-all min-h-[48px] shadow-lg shadow-blue-600/20"
         >
-          Sign In to Contact
+          Войти
         </Link>
       </div>
     )

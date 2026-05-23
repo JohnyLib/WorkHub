@@ -14,6 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_profiles: {
+        Row: {
+          agency_name: string
+          contact_name: string | null
+          contact_position: string | null
+          contract_types: string[] | null
+          created_at: string | null
+          description: string | null
+          email: string | null
+          id: string
+          languages: string[] | null
+          logo_url: string | null
+          phone: string | null
+          profile_id: string
+          rec_license: boolean | null
+          regions: string[] | null
+          registration_number: string | null
+          specializations: string[] | null
+          website: string | null
+        }
+        Insert: {
+          agency_name: string
+          contact_name?: string | null
+          contact_position?: string | null
+          contract_types?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          languages?: string[] | null
+          logo_url?: string | null
+          phone?: string | null
+          profile_id: string
+          rec_license?: boolean | null
+          regions?: string[] | null
+          registration_number?: string | null
+          specializations?: string[] | null
+          website?: string | null
+        }
+        Update: {
+          agency_name?: string
+          contact_name?: string | null
+          contact_position?: string | null
+          contract_types?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          languages?: string[] | null
+          logo_url?: string | null
+          phone?: string | null
+          profile_id?: string
+          rec_license?: boolean | null
+          regions?: string[] | null
+          registration_number?: string | null
+          specializations?: string[] | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_profiles: {
+        Row: {
+          city: string | null
+          company_name: string
+          company_size: string | null
+          company_type: string | null
+          contact_name: string | null
+          contact_position: string | null
+          created_at: string | null
+          description: string | null
+          email: string | null
+          founded_year: number | null
+          id: string
+          languages: string[] | null
+          logo_url: string | null
+          messengers: Json | null
+          phone: string | null
+          portfolio_photos: string[] | null
+          postcode: string | null
+          profile_id: string
+          regions: string[] | null
+          specializations: string[] | null
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          company_name: string
+          company_size?: string | null
+          company_type?: string | null
+          contact_name?: string | null
+          contact_position?: string | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          founded_year?: number | null
+          id?: string
+          languages?: string[] | null
+          logo_url?: string | null
+          messengers?: Json | null
+          phone?: string | null
+          portfolio_photos?: string[] | null
+          postcode?: string | null
+          profile_id: string
+          regions?: string[] | null
+          specializations?: string[] | null
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          company_name?: string
+          company_size?: string | null
+          company_type?: string | null
+          contact_name?: string | null
+          contact_position?: string | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          founded_year?: number | null
+          id?: string
+          languages?: string[] | null
+          logo_url?: string | null
+          messengers?: Json | null
+          phone?: string | null
+          portfolio_photos?: string[] | null
+          postcode?: string | null
+          profile_id?: string
+          regions?: string[] | null
+          specializations?: string[] | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_listings: {
         Row: {
           author_id: string
@@ -206,6 +354,41 @@ export type Database = {
           },
         ]
       }
+      private_profiles: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          display_name: string
+          id: string
+          phone: string | null
+          profile_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          display_name: string
+          id?: string
+          phone?: string | null
+          profile_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          phone?: string | null
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "private_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -215,6 +398,8 @@ export type Database = {
           id: string
           is_verified: boolean | null
           lang: string | null
+          onboarding_complete: boolean | null
+          phone: string | null
           role: string
         }
         Insert: {
@@ -225,6 +410,8 @@ export type Database = {
           id: string
           is_verified?: boolean | null
           lang?: string | null
+          onboarding_complete?: boolean | null
+          phone?: string | null
           role: string
         }
         Update: {
@@ -235,6 +422,8 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           lang?: string | null
+          onboarding_complete?: boolean | null
+          phone?: string | null
           role?: string
         }
         Relationships: []
@@ -275,73 +464,207 @@ export type Database = {
           },
         ]
       }
+      short_work_listings: {
+        Row: {
+          address: string | null
+          budget_amount: number | null
+          budget_type: string | null
+          city: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          payment_method: string | null
+          photos: string[] | null
+          postcode: string | null
+          preferred_date: string | null
+          preferred_time: string | null
+          profile_id: string
+          service_type: string
+          status: string | null
+          title: string
+          urgency: string | null
+          views_count: number | null
+        }
+        Insert: {
+          address?: string | null
+          budget_amount?: number | null
+          budget_type?: string | null
+          city?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_method?: string | null
+          photos?: string[] | null
+          postcode?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          profile_id: string
+          service_type: string
+          status?: string | null
+          title: string
+          urgency?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          address?: string | null
+          budget_amount?: number | null
+          budget_type?: string | null
+          city?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_method?: string | null
+          photos?: string[] | null
+          postcode?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          profile_id?: string
+          service_type?: string
+          status?: string | null
+          title?: string
+          urgency?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "short_work_listings_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       worker_profiles: {
         Row: {
+          additional_professions: string[] | null
           bio: string | null
           certifications: string[] | null
+          completion_rate: number | null
           contact_email: string | null
           contact_phone: string | null
           country: string | null
           created_at: string | null
+          cscs_level: string | null
+          cscs_status: boolean | null
+          dbs: boolean | null
           display_name: string
+          expected_rate: number | null
+          experience: string | null
           founded_year: number | null
+          has_tools: boolean | null
           id: string
           languages: string[] | null
           logo_url: string | null
           messengers: string[] | null
+          messengers_json: Json | null
+          nino: string | null
           payment_methods: string[] | null
+          portfolio_photos_urls: string[] | null
+          profession: string | null
           profile_id: string
+          rate_type: string | null
+          ready_to_travel: boolean | null
+          right_to_work: string | null
           specializations: string[] | null
           team_size: string | null
+          team_type: string | null
           type: string | null
+          utr: string | null
           website: string | null
           work_areas: string[] | null
+          work_cities: string[] | null
           works_piecework: boolean | null
           works_remotely: boolean | null
         }
         Insert: {
+          additional_professions?: string[] | null
           bio?: string | null
           certifications?: string[] | null
+          completion_rate?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string | null
+          cscs_level?: string | null
+          cscs_status?: boolean | null
+          dbs?: boolean | null
           display_name: string
+          expected_rate?: number | null
+          experience?: string | null
           founded_year?: number | null
+          has_tools?: boolean | null
           id?: string
           languages?: string[] | null
           logo_url?: string | null
           messengers?: string[] | null
+          messengers_json?: Json | null
+          nino?: string | null
           payment_methods?: string[] | null
+          portfolio_photos_urls?: string[] | null
+          profession?: string | null
           profile_id: string
+          rate_type?: string | null
+          ready_to_travel?: boolean | null
+          right_to_work?: string | null
           specializations?: string[] | null
           team_size?: string | null
+          team_type?: string | null
           type?: string | null
+          utr?: string | null
           website?: string | null
           work_areas?: string[] | null
+          work_cities?: string[] | null
           works_piecework?: boolean | null
           works_remotely?: boolean | null
         }
         Update: {
+          additional_professions?: string[] | null
           bio?: string | null
           certifications?: string[] | null
+          completion_rate?: number | null
           contact_email?: string | null
           contact_phone?: string | null
           country?: string | null
           created_at?: string | null
+          cscs_level?: string | null
+          cscs_status?: boolean | null
+          dbs?: boolean | null
           display_name?: string
+          expected_rate?: number | null
+          experience?: string | null
           founded_year?: number | null
+          has_tools?: boolean | null
           id?: string
           languages?: string[] | null
           logo_url?: string | null
           messengers?: string[] | null
+          messengers_json?: Json | null
+          nino?: string | null
           payment_methods?: string[] | null
+          portfolio_photos_urls?: string[] | null
+          profession?: string | null
           profile_id?: string
+          rate_type?: string | null
+          ready_to_travel?: boolean | null
+          right_to_work?: string | null
           specializations?: string[] | null
           team_size?: string | null
+          team_type?: string | null
           type?: string | null
+          utr?: string | null
           website?: string | null
           work_areas?: string[] | null
+          work_cities?: string[] | null
           works_piecework?: boolean | null
           works_remotely?: boolean | null
         }
@@ -360,7 +683,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_views: { Args: { row_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
@@ -370,126 +693,3 @@ export type Database = {
     }
   }
 }
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
